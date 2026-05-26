@@ -2,7 +2,7 @@
 
 Generates professional-quality SRT subtitle files from MP4 videos using Whisper large-v3.
 
-Designed for Zluri Academy screen-recording videos. Produces single-line, ~1.5–2.5s cues that match the readability standard established in the Ideal Subtitle Demo — ready to import into Premiere Pro with minimal manual editing.
+Produces single-line, ~1.5–2.5s cues that match the readability standard established in the Ideal Subtitle Demo — ready to import into Premiere Pro with minimal manual editing.
 
 ---
 
