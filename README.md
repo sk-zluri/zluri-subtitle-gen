@@ -1,4 +1,4 @@
-# Zluri Subtitle Generator
+# Zluri Subtitle Generator Skill
 
 Generates professional-quality SRT subtitle files from MP4 videos using Whisper large-v3.
 
