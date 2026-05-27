@@ -19,8 +19,14 @@ Produces single-line, ~1.5–2.5s cues that match the readability standard estab
 ## Requirements
 
 - **Python 3.11+** — [python.org/downloads](https://www.python.org/downloads/)
-- **NVIDIA GPU with 4GB+ VRAM** — strongly recommended (RTX series). CPU works but is 10–20× slower.
+- **GPU** — strongly recommended. See table below for what's supported.
 - **ffmpeg** — required by Whisper to decode MP4 audio
+
+| Machine | GPU acceleration | Speed |
+|---|---|---|
+| Windows with NVIDIA GPU | CUDA | Fast (~1–3 min per video) |
+| Mac with Apple Silicon (M1/M2/M3/M4) | MPS (Metal) | Fast (~1–3 min per video) |
+| Mac with Intel chip / no GPU | CPU only | Slow (~10–20 min per video) |
 
 ---
 
@@ -28,21 +34,28 @@ Produces single-line, ~1.5–2.5s cues that match the readability standard estab
 
 ### 1. Install ffmpeg
 
-Download from [ffmpeg.org/download.html](https://ffmpeg.org/download.html) and make sure `ffmpeg` is on your PATH.  
-Quick check: open a terminal and run `ffmpeg -version`. It should print a version number.
+**Mac:**
+```
+brew install ffmpeg
+```
+(Install Homebrew first if needed: [brew.sh](https://brew.sh))
+
+**Windows:** Download from [ffmpeg.org/download.html](https://ffmpeg.org/download.html) and add it to your PATH.
+
+Quick check for both: run `ffmpeg -version` in a terminal — it should print a version number.
 
 ### 2. Install PyTorch
 
-Go to **[pytorch.org/get-started/locally](https://pytorch.org/get-started/locally/)**, select your OS, Package = Pip, Language = Python, and your CUDA version (check it with `nvidia-smi`). Copy and run the generated `pip install` command.
+Go to **[pytorch.org/get-started/locally](https://pytorch.org/get-started/locally/)**, select your OS, Package = Pip, Language = Python, and your compute platform. Copy and run the generated command.
 
-Example for CUDA 12.6:
-```
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
-```
-
-If you don't have an NVIDIA GPU, select CPU and run:
+**Mac (Apple Silicon or Intel):**
 ```
 pip install torch torchvision torchaudio
+```
+
+**Windows with NVIDIA GPU** — select your CUDA version (check with `nvidia-smi`). Example for CUDA 12.6:
+```
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
 ```
 
 ### 3. Install Whisper and dependencies
@@ -53,9 +66,17 @@ pip install -r requirements.txt
 
 ### 4. Verify GPU is active (optional but recommended)
 
+**Mac (Apple Silicon):**
 ```
-python -c "import torch; print('GPU:', torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CPU only')"
+python -c "import torch; print('MPS available:', torch.backends.mps.is_available())"
 ```
+
+**Windows (NVIDIA):**
+```
+python -c "import torch; print('CUDA available:', torch.cuda.is_available())"
+```
+
+When you run the script, the first line printed will confirm which device it's using, e.g. `Loading Whisper large-v3 (MPS) ...`
 
 ---
 
@@ -126,6 +147,8 @@ These constants at the top of `generate_subtitles.py` control the output style:
 
 **Whisper model download is slow** — The large-v3 model is ~2.9 GB and downloads once to `~/.cache/whisper`. After that, it loads from disk in ~10 seconds.
 
-**GPU not detected after installing PyTorch** — Re-run the PyTorch install command from step 2. Make sure you selected the correct CUDA version for your driver (`nvidia-smi` shows it in the top-right corner of the output).
+**GPU not detected (Windows/NVIDIA)** — Re-run the PyTorch install command from step 2 and make sure you selected the correct CUDA version (`nvidia-smi` shows it in the top-right corner).
+
+**GPU not detected (Mac/Apple Silicon)** — Make sure you installed the standard PyTorch for Mac (no CUDA flag). Run the verify command in step 4; if MPS shows `False`, try reinstalling PyTorch.
 
 **Some product names still wrong** — Add them to `TERM_CORRECTIONS` in `generate_subtitles.py` and re-run. If a name is consistently wrong, it's worth adding it permanently.

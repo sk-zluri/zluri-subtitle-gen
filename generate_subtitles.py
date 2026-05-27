@@ -50,7 +50,15 @@ CLAUSE_STARTERS = {
     'however', 'therefore', 'thus', 'now', 'next', 'also', 'finally',
 }
 
-USE_FP16 = torch.cuda.is_available()  # fp16 only works on GPU
+if torch.cuda.is_available():
+    DEVICE = 'cuda'
+    USE_FP16 = True
+elif torch.backends.mps.is_available():
+    DEVICE = 'mps'
+    USE_FP16 = False   # fp16 on MPS is unstable; mps alone gives the speed boost
+else:
+    DEVICE = 'cpu'
+    USE_FP16 = False
 
 
 # ---------------------------------------------------------------------------
@@ -207,6 +215,7 @@ def process_video(path, model):
         task='transcribe',
         fp16=USE_FP16,
         verbose=False,
+        device=DEVICE,
     )
 
     all_words = [w for seg in result['segments'] for w in seg.get('words', [])]
@@ -221,9 +230,8 @@ def main():
     if not videos:
         sys.exit("No .mp4 files found in current directory.")
 
-    device = 'GPU' if USE_FP16 else 'CPU'
-    print(f"Loading Whisper {MODEL_NAME} ({device}) ...", end=' ', flush=True)
-    model = whisper.load_model(MODEL_NAME)
+    print(f"Loading Whisper {MODEL_NAME} ({DEVICE.upper()}) ...", end=' ', flush=True)
+    model = whisper.load_model(MODEL_NAME, device=DEVICE)
     print("ready.\n")
     print(f"Found {len(videos)} video(s) to process:\n")
 
